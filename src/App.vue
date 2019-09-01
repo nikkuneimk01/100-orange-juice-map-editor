@@ -1,11 +1,18 @@
 <template>
   <div id="app">
-    <button v-for="panel in panelInfo" :key="panel.name" @click="ChangeCurrentPanelType(panel.source)">{{panel.name}}</button>
-    <button>경로 설정</button>
+    <button v-for="panel in panelInfo" :key="panel.name" @click="ChangeSeletedPanelType(panel)">{{panel.name}}</button>
+    <button @click="isSetPath=true">경로 설정</button>
     <table id="field">
       <tr v-for="i in mapSize*3" :key = i>
-        <td v-for="j in mapSize*3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="ChangeClickedPanelType(i, j)" @contextmenu.prevent="ChangeClickedPanelTypeNone(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]">
-          <!-- {{`${(i-1)%3}, ${(j-1)%3}`}} -->
+        <td v-for="j in mapSize*3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]">
+          <!-- up arrow -->
+          <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(0deg);" v-if="(i-1)%3 === 2 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromDown === true">
+          <!-- right arrow -->
+          <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(90deg);" v-if="(i-1)%3 === 1 && (j-1)%3 === 0 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromLeft === true">
+          <!-- down arrow -->
+          <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(180deg);" v-if="(i-1)%3 === 0 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromUp === true">
+          <!-- left arrow -->
+          <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(-90deg);" v-if="(i-1)%3 === 1 && (j-1)%3 === 2 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromRight === true">
         </td>
       </tr>
     </table>
@@ -53,31 +60,68 @@ export default {
           color: '#000000'
         }
       ],
-      currentPanelType: 'mass_none',
-      // panelPosition: [
-      //   [{ backgroundPosition: 'top left'}, { backgroundPosition: 'top center'}, { backgroundPosition: 'top right'}],
-      //   [{ backgroundPosition: 'center left'}, { backgroundPosition: 'center center'}, { backgroundPosition: 'center right'}],
-      //   [{ backgroundPosition: 'bottom left'}, { backgroundPosition: 'bottom center'}, { backgroundPosition: 'bottom right'}],
-      // ]
+      currentPanelType: {
+        name: '패널 제거',
+        source: 'mass_none',
+        color: '#000000'
+      },
       panelPosition: [
         ['top-left', 'top_center', 'top-right'],
         ['center-left', 'center-center', 'center-right'],
         ['bottom-left', 'bottom-center', 'bottom-right'],
-      ]
+      ],
+      isSetPath: false,
+      movePath: [],
+      // struct
+      // cell_row_col {
+      //   comefrom~~, type
+      // }
+      fields: {},
     }
   },
   methods: {
-    ChangeCurrentPanelType(panel) {
-      // alert(panel);
+    bindCellClickEvent(ipos, jpos) {
+      if (this.isSetPath === false) {
+        this.ChangeClickedPanelType(ipos, jpos);
+      }
+      else {
+        this.setPath(ipos, jpos);
+      }
+      // 이걸 쓰면 안대는데 무슨 버그지?
+      this.$forceUpdate();
+    },
+    bindCellContextEvent(ipos, jpos) {
+      if (this.isSetPath === false) {
+        this.ChangeClickedPanelTypeNone(ipos, jpos);
+      }
+      // 이걸 쓰면 안대는데 무슨 버그지?
+      this.$forceUpdate();
+    },
+    ChangeSeletedPanelType(panel) {
+      this.isSetPath = false;
+      this.movePath = [];
       this.currentPanelType = panel;
     },
     ChangeClickedPanelType(ipos, jpos) {
+      // 클릭한 셀의 좌표를 필드 좌표로 변환
       const row = parseInt((ipos-1) / 3);
       const col = parseInt((jpos-1) / 3);
 
+      // 표 돔조작
       this.$refs[`cell_${row}_${col}`].forEach(cell => {
-        cell.setAttribute('style', `background: url(/static/img/panels/${this.currentPanelType}.png);`);
+        cell.setAttribute('style', `background: url(/static/img/panels/${this.currentPanelType.source}.png);`);
       });
+
+      // fields 변경
+      if(!this.fields[`cell_${row}_${col}`]) this.fields[`cell_${row}_${col}`] = {};
+      this.fields[`cell_${row}_${col}`].row = row;
+      this.fields[`cell_${row}_${col}`].col = col;
+      this.fields[`cell_${row}_${col}`].color = this.currentPanelType.color;
+      // this.fields[`cell_${row}_${col}`].comefromUp = false;
+      // this.fields[`cell_${row}_${col}`].comefromDown = false;
+      // this.fields[`cell_${row}_${col}`].comefromLeft = false;
+      // this.fields[`cell_${row}_${col}`].comefromRight = false;
+      console.log(this.fields);
     },
     ChangeClickedPanelTypeNone(ipos, jpos) {
       const row = parseInt((ipos-1) / 3);
@@ -86,6 +130,150 @@ export default {
       this.$refs[`cell_${row}_${col}`].forEach(cell => {
         cell.setAttribute('style', `background: url(/static/img/panels/mass_none.png);`);
       });
+    },
+    setPath(ipos, jpos) {
+      const direction = [{drow: -1, dcol: 0}, {drow: 0, dcol: 1}, {drow: 1, dcol: 0}, {drow: 0, dcol: -1}];
+
+      const row = parseInt((ipos-1) / 3);
+      const col = parseInt((jpos-1) / 3);
+
+      this.movePath.push({row, col});
+      if (this.movePath.length >= 2) {
+        if(!direction.some((item, i) => {
+          if(this.movePath[1].row - this.movePath[0].row === item.drow && this.movePath[1].col - this.movePath[0].col === item.dcol) {
+            console.log(i);
+
+            // 아래쪽에서 현재 패널로
+            if(i === 0) this.fields[`cell_${this.movePath[1].row}_${this.movePath[1].col}`].comefromDown = true;
+            // 왼쪽에서 현재 패널로
+            else if(i === 1) this.fields[`cell_${this.movePath[1].row}_${this.movePath[1].col}`].comefromLeft = true;
+            // 위쪽에서 현재 패널로
+            else if(i === 2) this.fields[`cell_${this.movePath[1].row}_${this.movePath[1].col}`].comefromUp = true;
+            // 오른쪽에서 현재 패널로
+            else if(i === 3) this.fields[`cell_${this.movePath[1].row}_${this.movePath[1].col}`].comefromRight = true;
+
+            this.movePath.shift();
+            return true;
+          }
+          else return false;
+        })) {
+          console.log('fuck');
+          this.movePath.pop();
+        }
+      }
+    },
+    deepCompare () {
+      var i, l, leftChain, rightChain;
+
+      function compare2Objects (x, y) {
+        var p;
+
+        // remember that NaN === NaN returns false
+        // and isNaN(undefined) returns true
+        if (isNaN(x) && isNaN(y) && typeof x === 'number' && typeof y === 'number') {
+          return true;
+        }
+
+        // Compare primitives and functions.     
+        // Check if both arguments link to the same object.
+        // Especially useful on the step where we compare prototypes
+        if (x === y) {
+          return true;
+        }
+
+        // Works in case when functions are created in constructor.
+        // Comparing dates is a common scenario. Another built-ins?
+        // We can even handle functions passed across iframes
+        if ((typeof x === 'function' && typeof y === 'function') ||
+          (x instanceof Date && y instanceof Date) ||
+          (x instanceof RegExp && y instanceof RegExp) ||
+          (x instanceof String && y instanceof String) ||
+          (x instanceof Number && y instanceof Number)) {
+            return x.toString() === y.toString();
+        }
+
+        // At last checking prototypes as good as we can
+        if (!(x instanceof Object && y instanceof Object)) {
+          return false;
+        }
+
+        if (x.isPrototypeOf(y) || y.isPrototypeOf(x)) {
+          return false;
+        }
+
+        if (x.constructor !== y.constructor) {
+          return false;
+        }
+
+        if (x.prototype !== y.prototype) {
+          return false;
+        }
+
+        // Check for infinitive linking loops
+        if (leftChain.indexOf(x) > -1 || rightChain.indexOf(y) > -1) {
+          return false;
+        }
+
+        // Quick checking of one object being a subset of another.
+        // todo: cache the structure of arguments[0] for performance
+        for (p in y) {
+          if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
+            return false;
+          }
+          else if (typeof y[p] !== typeof x[p]) {
+            return false;
+          }
+        }
+
+        for (p in x) {
+          if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
+            return false;
+          }
+          else if (typeof y[p] !== typeof x[p]) {
+            return false;
+          }
+
+          switch (typeof (x[p])) {
+            case 'object':
+            case 'function':
+              leftChain.push(x);
+              rightChain.push(y);
+
+              if (!compare2Objects (x[p], y[p])) {
+                return false;
+              }
+
+              leftChain.pop();
+              rightChain.pop();
+              break;
+
+            default:
+              if (x[p] !== y[p]) {
+                return false;
+              }
+              break;
+          }
+        }
+
+        return true;
+      }
+
+      if (arguments.length < 1) {
+        return true; //Die silently? Don't know how to handle such case, please help...
+        // throw "Need two or more arguments to compare";
+      }
+
+      for (i = 1, l = arguments.length; i < l; i++) {
+
+        leftChain = []; //Todo: this can be cached
+        rightChain = [];
+
+        if (!compare2Objects(arguments[0], arguments[i])) {
+          return false;
+        }
+      }
+
+      return true;
     }
   },
   watch: {
@@ -100,11 +288,12 @@ export default {
   table#field {
     padding: 0;
     border: 1px solid #ff0000 !important;
-    border-collapse:collapse
+    border-collapse:collapse;
+    line-height: 0;
   }
   table#field td {
     width: 20px;
-    height: 20px;
+    height: 20px !important;
     background: url(/static/img/panels/mass_none.png);
     background-size: 300% !important;
     padding: 0;
