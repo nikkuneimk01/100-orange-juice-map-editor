@@ -2,9 +2,10 @@
   <div id="app">
     <button v-for="panel in panelInfo" :key="panel.name" @click="ChangeSeletedPanelType(panel)">{{panel.name}}</button>
     <button @click="isSetPath=true">경로 설정</button>
+    <button @click="convertMap2Png()">이미지화</button>
     <table id="field">
-      <tr v-for="i in mapSize*3" :key = i>
-        <td v-for="j in mapSize*3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]">
+      <tr v-for="i in mapSize * 3" :key = i>
+        <td v-for="j in mapSize * 3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]">
           <!-- up arrow -->
           <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(0deg);" v-if="(i-1)%3 === 2 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromDown === true">
           <!-- right arrow -->
@@ -20,6 +21,9 @@
 </template>
 
 <script>
+import Jimp from 'jimp';
+import config from './config.json';
+
 export default {
   components: {
   },
@@ -27,6 +31,10 @@ export default {
     return {
       mapSize: 11,
       panelInfo: [ {
+          name: '일반',
+          source: null,
+          color: '#7f7f7f'
+        }, {
           name: '보너스',
           source: 'mass_bonus0',
           color: '#ffc90e'
@@ -37,7 +45,7 @@ export default {
         }, {
           name: '드롭',
           source: 'mass_drop0',
-          color: null,
+          color: '#3f48cc',
         }, {
           name: '엔카운터',
           source: 'mass_encount0',
@@ -51,19 +59,39 @@ export default {
           source: 'mass_warp0',
           color: '#a349a4'
         }, {
+          name: '워프무브',
+          source: null,
+          color: '#e2389a'
+        }, {
+          name: '더블 보너스',
+          source: null,
+          color: '#ae8700'
+        }, {
+          name: '더블 드로우',
+          source: null,
+          color: '#0b620f'
+        }, {
+          name: '더블 드롭',
+          source: null,
+          color: '#1c2166'
+        }, {
+          name: '더블 엔카운터',
+          source: null,
+          color: '#880015'
+        }, {
           name: '체크',
           source: 'mass_check0',
           color: '#ff7f27'
         }, {
-          name: '패널 제거',
-          source: 'mass_none',
-          color: '#000000'
+          name: '아이스',
+          source: null,
+          color: '#99d9ea'
         }
       ],
       currentPanelType: {
-        name: '패널 제거',
-        source: 'mass_none',
-        color: '#000000'
+        name: '체크',
+        source: 'mass_check0',
+        color: '#ff7f27'
       },
       panelPosition: [
         ['top-left', 'top_center', 'top-right'],
@@ -117,19 +145,36 @@ export default {
       this.fields[`cell_${row}_${col}`].row = row;
       this.fields[`cell_${row}_${col}`].col = col;
       this.fields[`cell_${row}_${col}`].color = this.currentPanelType.color;
-      // this.fields[`cell_${row}_${col}`].comefromUp = false;
-      // this.fields[`cell_${row}_${col}`].comefromDown = false;
-      // this.fields[`cell_${row}_${col}`].comefromLeft = false;
-      // this.fields[`cell_${row}_${col}`].comefromRight = false;
       console.log(this.fields);
     },
     ChangeClickedPanelTypeNone(ipos, jpos) {
+      // 클릭한 셀의 좌표를 필드 좌표로 변환
       const row = parseInt((ipos-1) / 3);
       const col = parseInt((jpos-1) / 3);
 
+      // 표 돔조작
       this.$refs[`cell_${row}_${col}`].forEach(cell => {
         cell.setAttribute('style', `background: url(/static/img/panels/mass_none.png);`);
       });
+
+      // fields 변경
+      if(!this.fields[`cell_${row}_${col}`]) this.fields[`cell_${row}_${col}`] = {};
+      this.fields[`cell_${row}_${col}`].row = row;
+      this.fields[`cell_${row}_${col}`].col = col;
+      this.fields[`cell_${row}_${col}`].color = config.colorInfo.none;
+
+      // 클릭 패널로 오는 연관된 경로 제거
+      this.fields[`cell_${row}_${col}`].comefromUp = false;
+      this.fields[`cell_${row}_${col}`].comefromDown = false;
+      this.fields[`cell_${row}_${col}`].comefromLeft = false;
+      this.fields[`cell_${row}_${col}`].comefromRight = false;
+      // 클릭 패널에서 가는 연관된 경로 제거
+      if(this.fields[`cell_${row-1}_${col}`]) this.fields[`cell_${row-1}_${col}`].comefromDown = false;
+      if(this.fields[`cell_${row+1}_${col}`]) this.fields[`cell_${row+1}_${col}`].comefromUp = false;
+      if(this.fields[`cell_${row}_${col-1}`]) this.fields[`cell_${row}_${col-1}`].comefromLeft = false;
+      if(this.fields[`cell_${row}_${col+1}`]) this.fields[`cell_${row}_${col+1}`].comefromRight = false;
+
+      console.log(this.fields);
     },
     setPath(ipos, jpos) {
       const direction = [{drow: -1, dcol: 0}, {drow: 0, dcol: 1}, {drow: 1, dcol: 0}, {drow: 0, dcol: -1}];
@@ -138,7 +183,7 @@ export default {
       const col = parseInt((jpos-1) / 3);
 
       // 클릭한 패널이 빈 공간이라면 무시
-      if(!this.fields[`cell_${row}_${col}`] || this.fields[`cell_${row}_${col}`].color === '#000000') {
+      if(!this.fields[`cell_${row}_${col}`] || this.fields[`cell_${row}_${col}`].color === config.colorInfo.none) {
         return;
       }
 
@@ -168,6 +213,46 @@ export default {
           this.movePath.pop();
         }
       }
+    },
+    convertMap2Png(){
+      // 맵 크기의 이미지를 만들고
+      new Jimp(this.mapSize * 3, this.mapSize * 3, 0x00000000, (err, image) => {
+        // image.rgba(false).background(0x00000000);
+        image.dither565(); 
+        // 모든 저장된 패널 정보를 순회
+        Object.keys(this.fields).map((key) => {
+          // 빈 패널은 거른다
+          if(this.fields[key].color === config.colorInfo.none)  return;
+          // key값으로 row col 조회
+          const splitedKey = key.split('_');
+          const row = parseInt(splitedKey[1]);
+          const col = parseInt(splitedKey[2]);
+
+          // 한 패널당 행렬 3픽셀 픽셀 정보로
+          for(let i = row * 3; i < (row + 1) * 3; i++) {
+            for(let j = col * 3; j < (col + 1) * 3; j++) {
+              image.setPixelColor(Jimp.cssColorToHex(this.fields[key].color), j, i);
+              console.log(i, j);
+            }
+          }
+
+          // 패널 이동 방향 표시
+          if(this.fields[key].comefromUp) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 1, row * 3);
+          else if(this.fields[`cell_${row-1}_${col}`] && this.fields[`cell_${row-1}_${col}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 1, row * 3);
+          
+          if(this.fields[key].comefromDown) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 1, row * 3 + 2);
+          else if(this.fields[`cell_${row+1}_${col}`] && this.fields[`cell_${row+1}_${col}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 1, row * 3 + 2);
+          
+          if(this.fields[key].comefromLeft) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3, row * 3 + 1);
+          else if(this.fields[`cell_${row}_${col-1}`] && this.fields[`cell_${row}_${col-1}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3, row * 3 + 1);
+          
+          if(this.fields[key].comefromRight) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 2, row * 3 + 1);
+          else if(this.fields[`cell_${row}_${col+1}`] && this.fields[`cell_${row}_${col+1}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 2, row * 3 + 1);
+        });
+        image.getBase64(Jimp.MIME_PNG, (err, res) => {
+          console.log(res);
+        });
+      });
     },
     deepCompare () {
       var i, l, leftChain, rightChain;
