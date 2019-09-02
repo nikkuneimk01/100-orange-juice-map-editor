@@ -137,9 +137,16 @@ export default {
       const row = parseInt((ipos-1) / 3);
       const col = parseInt((jpos-1) / 3);
 
+      // 클릭한 패널이 빈 공간이라면 무시
+      if(!this.fields[`cell_${row}_${col}`] || this.fields[`cell_${row}_${col}`].color === '#000000') {
+        return;
+      }
+
       this.movePath.push({row, col});
+      console.log('pushed');
       if (this.movePath.length >= 2) {
         if(!direction.some((item, i) => {
+          // 클릭한 두 패널이 인접해있는지 확인
           if(this.movePath[1].row - this.movePath[0].row === item.drow && this.movePath[1].col - this.movePath[0].col === item.dcol) {
             console.log(i);
 
@@ -287,7 +294,7 @@ export default {
 <style scoped>
   table#field {
     padding: 0;
-    border: 1px solid #ff0000 !important;
+    border: 1px solid #cccccc;
     border-collapse:collapse;
     line-height: 0;
   }
