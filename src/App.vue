@@ -1,15 +1,16 @@
 <template>
-  <div id="app">
+  <div id="app" @click.middle="isSetPath = !isSetPath">
     <!-- <button v-for="panel in panelInfo" :key="panel.name" @click="ChangeSeletedPanelType(panel)">{{panel.name}}</button>
     <button @click="isSetPath=true">경로 설정</button>
     <button @click="convertMap2Png()">이미지화</button>
     <button @click="cellSize++">셀 크기 +</button>
     <button @click="cellSize--">셀 크기 -</button> -->
     <div id="controlPanel">
-      <table>
-        <tr>
-          <td>
-            
+      <table v-if="!isSetPath">
+        <tr v-for="(row, i) in panelLayout" :key="i">
+          <td v-for="col in row" :key="col">
+            <!-- {{col}} -->
+            <img :src="`/static/img/panels/${panelInfo[col].source}.png`" width="60" @click="ChangeSeletedPanelType(panelInfo[col])" :title="col" style="cursor: pointer;">
           </td>
         </tr>
       </table>
@@ -44,84 +45,88 @@ export default {
     return {
       mapSize: 11,
       cellSize: 20,
-      panelInfo: [ {
-          name: '일반',
+      panelLayout: [
+        [ '일반', '보너스', '드로우', '엔카운터', '드롭', '무브', '워프', '워프 무브', '힐', '아이스'],
+        [ '체크',   '더블 보너스', '더블 드로우', '더블 엔카운터', '더블 드롭', '더블 무브', '일반', '워프 더블 무브', '더블 힐', '미니게임']
+      ],
+      panelInfo: {
+        '일반': {
           source: 'mass_common0',
           color: config.colorInfo.common
-        }, {
-          name: '보너스',
+        },
+        '보너스': {
           source: 'mass_bonus0',
           color: config.colorInfo.bonus
-        }, {
-          name: '더블 보너스',
+        }, 
+        '더블 보너스': {
           source: 'mass_bonusL2',
           color: config.colorInfo.bonusL
-        }, {
-          name: '드로우',
+        },
+        '드로우': {
           source: 'mass_draw0',
           color: config.colorInfo.draw
-        }, {
-          name: '더블 드로우',
+        }, 
+        '더블 드로우': {
           source: 'mass_drawL2',
           color: config.colorInfo.drawL
-        }, {
-          name: '드롭',
+        }, 
+        '드롭': {
           source: 'mass_drop0',
           color: config.colorInfo.drop
-        }, {
-          name: '더블 드롭',
+        }, 
+        '더블 드롭': {
           source: 'mass_dropL2',
           color: config.colorInfo.dropL
-        }, {
-          name: '엔카운터',
+        }, 
+        '엔카운터': {
           source: 'mass_encount0',
           color: config.colorInfo.encount
-        }, {
-          name: '더블 엔카운터',
+        },
+        '더블 엔카운터': {
           source: 'mass_encountL2',
           color: config.colorInfo.encountL
-        }, {
-          name: '무브',
+        }, 
+        '무브': {
           source: 'mass_move0',
           color: config.colorInfo.move
-        }, {
-          name: '더블 무브',
+        },
+        '더블 무브': {
           source: 'mass_moveL2',
           color: config.colorInfo.moveL
-        }, {
-          name: '워프',
+        },
+        '워프': {
           source: 'mass_warp0',
           color: config.colorInfo.warp
-        }, {
-          name: '워프 무브',
+        },
+        '워프 무브': {
           source: 'mass_warpmove0',
           color: config.colorInfo.warpmove
-        }, {
-          name: '워프 더블 무브',
+        },
+        '워프 더블 무브': {
           source: 'mass_warpmoveL2',
           color: config.colorInfo.warpmoveL
-        }, {
-          name: '체크',
+        },
+        '체크': {
           source: 'mass_check0',
           color: config.colorInfo.check
-        }, {
-          name: '힐',
+        },
+        '힐': {
           source: 'mass_heal',
           color: config.colorInfo.heal
-        }, {
-          name: '더블 힐',
+        },
+        '더블 힐': {
           source: 'mass_healL2',
           color: config.colorInfo.healL
-        }, {
-          name: '아이스',
+        },
+        '아이스': {
           source: 'mass_ice0',
           color: config.colorInfo.ice
-        }, {
-          name: '미니게임',
+        }, 
+        '미니게임': {
           source: 'mass_minigame',
           color: config.colorInfo.minigame
         }
-      ],
+      },
       currentPanelType: {
         name: '체크',
         source: 'mass_check0',
