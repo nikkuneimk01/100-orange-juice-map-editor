@@ -1,19 +1,30 @@
 <template>
   <div id="app">
-    <button v-for="panel in panelInfo" :key="panel.name" @click="ChangeSeletedPanelType(panel)">{{panel.name}}</button>
+    <!-- <button v-for="panel in panelInfo" :key="panel.name" @click="ChangeSeletedPanelType(panel)">{{panel.name}}</button>
     <button @click="isSetPath=true">경로 설정</button>
     <button @click="convertMap2Png()">이미지화</button>
+    <button @click="cellSize++">셀 크기 +</button>
+    <button @click="cellSize--">셀 크기 -</button> -->
+    <div id="controlPanel">
+      <table>
+        <tr>
+          <td>
+            
+          </td>
+        </tr>
+      </table>
+    </div>
     <table id="field">
       <tr v-for="i in mapSize * 3" :key = i>
-        <td v-for="j in mapSize * 3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]">
+        <td v-for="j in mapSize * 3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]" :style="{width: cellSize+'px', height: cellSize + 'px !important'}">
           <!-- up arrow -->
-          <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(0deg);" v-if="(i-1)%3 === 2 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromDown === true">
+          <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(0deg)'}" v-if="(i-1)%3 === 2 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromDown === true">
           <!-- right arrow -->
-          <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(90deg);" v-if="(i-1)%3 === 1 && (j-1)%3 === 0 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromLeft === true">
+          <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(90deg)'}" v-if="(i-1)%3 === 1 && (j-1)%3 === 0 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromLeft === true">
           <!-- down arrow -->
-          <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(180deg);" v-if="(i-1)%3 === 0 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromUp === true">
+          <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(180deg)'}" v-if="(i-1)%3 === 0 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromUp === true">
           <!-- left arrow -->
-          <img src="/static/img/panels/mass_arrow.png" style="width: 100%; height: 100%; transform: rotate(-90deg);" v-if="(i-1)%3 === 1 && (j-1)%3 === 2 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromRight === true">
+          <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(-90deg)'}" v-if="(i-1)%3 === 1 && (j-1)%3 === 2 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromRight === true">
         </td>
       </tr>
     </table>
@@ -32,62 +43,83 @@ export default {
   data() {
     return {
       mapSize: 11,
+      cellSize: 20,
       panelInfo: [ {
           name: '일반',
-          source: null,
-          color: '#7f7f7f'
+          source: 'mass_common0',
+          color: config.colorInfo.common
         }, {
           name: '보너스',
           source: 'mass_bonus0',
-          color: '#ffc90e'
+          color: config.colorInfo.bonus
+        }, {
+          name: '더블 보너스',
+          source: 'mass_bonusL2',
+          color: config.colorInfo.bonusL
         }, {
           name: '드로우',
           source: 'mass_draw0',
-          color: '#22b14c'
+          color: config.colorInfo.draw
+        }, {
+          name: '더블 드로우',
+          source: 'mass_drawL2',
+          color: config.colorInfo.drawL
         }, {
           name: '드롭',
           source: 'mass_drop0',
-          color: '#3f48cc',
+          color: config.colorInfo.drop
+        }, {
+          name: '더블 드롭',
+          source: 'mass_dropL2',
+          color: config.colorInfo.dropL
         }, {
           name: '엔카운터',
           source: 'mass_encount0',
-          color: '#eb1c24'
+          color: config.colorInfo.encount
+        }, {
+          name: '더블 엔카운터',
+          source: 'mass_encountL2',
+          color: config.colorInfo.encountL
         }, {
           name: '무브',
           source: 'mass_move0',
-          color: '#00a2e8'
+          color: config.colorInfo.move
+        }, {
+          name: '더블 무브',
+          source: 'mass_moveL2',
+          color: config.colorInfo.moveL
         }, {
           name: '워프',
           source: 'mass_warp0',
-          color: '#a349a4'
+          color: config.colorInfo.warp
         }, {
-          name: '워프무브',
-          source: null,
-          color: '#e2389a'
+          name: '워프 무브',
+          source: 'mass_warpmove0',
+          color: config.colorInfo.warpmove
         }, {
-          name: '더블 보너스',
-          source: null,
-          color: '#ae8700'
-        }, {
-          name: '더블 드로우',
-          source: null,
-          color: '#0b620f'
-        }, {
-          name: '더블 드롭',
-          source: null,
-          color: '#1c2166'
-        }, {
-          name: '더블 엔카운터',
-          source: null,
-          color: '#880015'
+          name: '워프 더블 무브',
+          source: 'mass_warpmoveL2',
+          color: config.colorInfo.warpmoveL
         }, {
           name: '체크',
           source: 'mass_check0',
-          color: '#ff7f27'
+          color: config.colorInfo.check
+        }, {
+          name: '힐',
+          source: 'mass_heal',
+          color: config.colorInfo.heal
+        }, {
+          name: '더블 힐',
+          source: 'mass_healL2',
+          color: config.colorInfo.healL
         }, {
           name: '아이스',
-          source: null,
-          color: '#99d9ea'
+          source: 'mass_ice0',
+          color: config.colorInfo.ice
+        }, {
+          name: '미니게임',
+          source: 'mass_minigame',
+          color: config.colorInfo.minigame
         }
       ],
       currentPanelType: {
@@ -212,7 +244,7 @@ export default {
           else return false;
         })) {
           console.log('fuck');
-          this.movePath.pop();
+          this.movePath.shift();
         }
       }
     },
@@ -411,8 +443,6 @@ export default {
     line-height: 0;
   }
   table#field td {
-    width: 20px;
-    height: 20px !important;
     background: url(/static/img/panels/mass_none.png);
     background-size: 300% !important;
     padding: 0;

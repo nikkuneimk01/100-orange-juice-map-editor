@@ -2,6 +2,27 @@
     "colorInfo": {
         "none": "#000000",
         "frontDirection": "#404040",
-        "backDirection": "#ffffff"
+        "backDirection": "#ffffff",
+        "common": "#7f7f7f",
+        "bonus": "#ffc90e",
+        "bonusL": "#ae8700",
+        "draw": "#22b14c",
+        "drawL": "#0b620f",
+        "drop": "#3f48cc",
+        "dropL": "#1c2166",
+        "encount": "#eb1c24",
+        "encountL": "#880015",
+        "move": "#00a2e8",
+        "moveL": null,
+        "warp": "#a349a4",
+        "warpmove": "#e2389a",
+        "warpmoveL": null,
+        "check": "#ff7f27",
+        "heal": null,
+        "healL": null,
+        "ice": "#99d9ea",
+        "minigame": null
     }
 }
+
+ 
