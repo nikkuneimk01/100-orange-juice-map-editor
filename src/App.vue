@@ -22,6 +22,8 @@
 
 <script>
 import Jimp from 'jimp';
+import { PNG } from 'pngjs';
+import fs from 'fs';
 import config from './config.json';
 
 export default {
@@ -214,11 +216,16 @@ export default {
         }
       }
     },
-    convertMap2Png(){
+    async convertMap2Png(){
       // 맵 크기의 이미지를 만들고
-      new Jimp(this.mapSize * 3, this.mapSize * 3, 0x00000000, (err, image) => {
-        // image.rgba(false).background(0x00000000);
-        image.dither565(); 
+      new Jimp(this.mapSize * 3, this.mapSize * 3, async (err, image) => {
+        for(let i = 0; i < this.mapSize * 3; i++) {
+          for(let j = 0; j < this.mapSize * 3; j++) {
+            image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.none), j, i);
+            // console.log(i, j);
+          }
+        }
+        //
         // 모든 저장된 패널 정보를 순회
         Object.keys(this.fields).map((key) => {
           // 빈 패널은 거른다
@@ -239,19 +246,39 @@ export default {
           // 패널 이동 방향 표시
           if(this.fields[key].comefromUp) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 1, row * 3);
           else if(this.fields[`cell_${row-1}_${col}`] && this.fields[`cell_${row-1}_${col}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 1, row * 3);
-          
+
           if(this.fields[key].comefromDown) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 1, row * 3 + 2);
           else if(this.fields[`cell_${row+1}_${col}`] && this.fields[`cell_${row+1}_${col}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 1, row * 3 + 2);
-          
+
           if(this.fields[key].comefromLeft) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3, row * 3 + 1);
           else if(this.fields[`cell_${row}_${col-1}`] && this.fields[`cell_${row}_${col-1}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3, row * 3 + 1);
-          
+
           if(this.fields[key].comefromRight) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 2, row * 3 + 1);
           else if(this.fields[`cell_${row}_${col+1}`] && this.fields[`cell_${row}_${col+1}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 2, row * 3 + 1);
         });
-        image.getBase64(Jimp.MIME_PNG, (err, res) => {
-          console.log(res);
-        });
+
+        const buff = await image.getBufferAsync(Jimp.MIME_PNG);
+        // console.log(buff);
+        var png = PNG.sync.read(buff);
+        var options = { colorType: 2 };
+        var buffer = PNG.sync.write(png, options);
+        fs.writeFileSync('out2.png', buffer);
+
+        // console.log(fs.createReadStream('in.png').pipe());
+
+        // buff
+        //   .pipe(new PNG({
+        //     colorType: 2,
+        //     bgColor: {
+        //       red: 0,
+        //       green: 0,
+        //       blue: 0
+        //     }
+        //   }))
+        //   .on('parsed', function() {
+        //     this.pack().pipe(fs.createWriteStream('out.png'));
+        //     console.log('fa')
+        //   });
       });
     },
     deepCompare () {
@@ -266,7 +293,7 @@ export default {
           return true;
         }
 
-        // Compare primitives and functions.     
+        // Compare primitives and functions.
         // Check if both arguments link to the same object.
         // Especially useful on the step where we compare prototypes
         if (x === y) {
