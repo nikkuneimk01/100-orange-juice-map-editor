@@ -2,18 +2,26 @@
   <div id="app" @click.middle="isSetPath = !isSetPath">
     <!-- <button v-for="panel in panelInfo" :key="panel.name" @click="ChangeSeletedPanelType(panel)">{{panel.name}}</button>
     <button @click="isSetPath=true">경로 설정</button>
-    <button @click="convertMap2Png()">이미지화</button>
+    
     <button @click="cellSize++">셀 크기 +</button>
     <button @click="cellSize--">셀 크기 -</button> -->
-    <div id="controlPanel">
-      <table v-if="!isSetPath">
-        <tr v-for="(row, i) in panelLayout" :key="i">
-          <td v-for="col in row" :key="col">
-            <!-- {{col}} -->
-            <img :src="`/static/img/panels/${panelInfo[col].source}.png`" width="60" @click="ChangeSeletedPanelType(panelInfo[col])" :title="col" style="cursor: pointer;">
-          </td>
-        </tr>
-      </table>
+    <button @click="convertMap2Png()">이미지화</button>
+    <div id="control-panel">
+      <div>
+        <table id="panel-tools" :class="{ 'set-path-mode': isSetPath }">
+          <tr v-for="(row, i) in panelLayout" :key="i">
+            <td v-for="col in row" :key="col">
+              <!-- {{col}} -->
+              <img :src="`/static/img/panels/${panelInfo[col].source}.png`" width="60"
+                @click="ChangeSeletedPanelType(panelInfo[col])" :title="col"
+                style="cursor: pointer;"
+                @mouseover="panelToolsHoverd" 
+                @mouseleave="panelToolsLeaved" 
+              > 
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
     <table id="field">
       <tr v-for="i in mapSize * 3" :key = i>
@@ -36,14 +44,18 @@
 import Jimp from 'jimp';
 import { PNG } from 'pngjs';
 import fs from 'fs';
+import path from 'path';
 import config from './config.json';
+import electron from 'electron';
+
+const { dialog } = electron.remote;
 
 export default {
   components: {
   },
   data() {
     return {
-      mapSize: 11,
+      mapSize: 10,
       cellSize: 20,
       panelLayout: [
         [ '일반', '보너스', '드로우', '엔카운터', '드롭', '무브', '워프', '워프 무브', '힐', '아이스'],
@@ -128,9 +140,8 @@ export default {
         }
       },
       currentPanelType: {
-        name: '체크',
-        source: 'mass_check0',
-        color: '#ff7f27'
+        source: 'mass_common0',
+        color: config.colorInfo.common
       },
       panelPosition: [
         ['top-left', 'top_center', 'top-right'],
@@ -147,6 +158,12 @@ export default {
     }
   },
   methods: {
+    panelToolsHoverd(e){
+      e.target.style.opacity = 0.2;
+    },
+    panelToolsLeaved(e){
+      e.target.style.opacity = 1;
+    },
     bindCellClickEvent(ipos, jpos) {
       if (this.isSetPath === false) {
         this.ChangeClickedPanelType(ipos, jpos);
@@ -165,7 +182,6 @@ export default {
       this.$forceUpdate();
     },
     ChangeSeletedPanelType(panel) {
-      this.isSetPath = false;
       this.movePath = [];
       this.currentPanelType = panel;
     },
@@ -299,8 +315,10 @@ export default {
         var png = PNG.sync.read(buff);
         var options = { colorType: 2 };
         var buffer = PNG.sync.write(png, options);
-        fs.writeFileSync('out2.png', buffer);
 
+        const filePath = await dialog.showSaveDialogSync({ filters: [ { name: '24비트 PNG (*.png)', extensions: [ 'png' ] } ] });
+        console.log(filePath);
+        fs.writeFileSync(filePath, buffer);
         // console.log(fs.createReadStream('in.png').pipe());
 
         // buff
@@ -441,16 +459,23 @@ export default {
 </script>
 
 <style scoped>
-  table#field {
+  table#field, table#panel-tools {
     padding: 0;
     border: 1px solid #cccccc;
     border-collapse:collapse;
     line-height: 0;
   }
+  table#panel-tools td {
+    padding: 0;
+    border: 1px solid;
+  }
   table#field td {
     background: url(/static/img/panels/mass_none.png);
     background-size: 300% !important;
     padding: 0;
+  }
+  table.set-path-mode {
+    opacity: 0.1;
   }
   td.top-left {
     background-position: top left !important;
