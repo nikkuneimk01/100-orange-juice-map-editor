@@ -5,10 +5,10 @@
     
     <button @click="cellSize++">셀 크기 +</button>
     <button @click="cellSize--">셀 크기 -</button> -->
-    <button @click="convertMap2Png()">이미지화</button>
+    <!-- <button @click="convertMap2Png()">이미지화</button> -->
     <div id="control-panel">
       <div>
-        <table id="panel-tools" :class="{ 'set-path-mode': isSetPath }">
+        <table id="panel-tools" :class="{ 'set-path-mode': isSetPath }" style="margin-bottom: 20px;">
           <tr v-for="(row, i) in panelLayout" :key="i">
             <td v-for="col in row" :key="col">
               <!-- {{col}} -->
@@ -21,22 +21,38 @@
             </td>
           </tr>
         </table>
+        <table id="other-tools" style="margin-bottom: 60px;">
+          <tr>
+            <td>불러오기</td>
+            <td><img src="/static/img/tools/tool_filesave.svg" width="60" @click="convertMap2Png()"></td>
+            <td></td>
+            <td><img src="/static/img/tools/tool_arrow.svg" width="60" style="transform: rotate(180deg);" @click="mapSize--"></td>
+            <td><img src="/static/img/tools/tool_map.svg" width="60" style="cursor: default;" title="맵의 사이즈를 늘이거나 줄입니다."></td>
+            <td><img src="/static/img/tools/tool_arrow.svg" width="60" @click="mapSize++"></td>
+            <td></td>
+            <td><img src="/static/img/tools/tool_arrow.svg" width="60" style="transform: rotate(180deg);"  @click="cellSize--"></td>
+            <td><img src="/static/img/tools/tool_magnifying.svg" width="60" style="cursor: default;" title="셀을 확대하거나 축소합니다."></td>
+            <td><img src="/static/img/tools/tool_arrow.svg" width="60" @click="cellSize++"></td>
+          </tr>
+        </table>
       </div>
     </div>
-    <table id="field">
-      <tr v-for="i in mapSize * 3" :key = i>
-        <td v-for="j in mapSize * 3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]" :style="{width: cellSize+'px', height: cellSize + 'px !important'}">
-          <!-- up arrow -->
-          <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(0deg)'}" v-if="(i-1)%3 === 2 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromDown === true">
-          <!-- right arrow -->
-          <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(90deg)'}" v-if="(i-1)%3 === 1 && (j-1)%3 === 0 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromLeft === true">
-          <!-- down arrow -->
-          <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(180deg)'}" v-if="(i-1)%3 === 0 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromUp === true">
-          <!-- left arrow -->
-          <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(-90deg)'}" v-if="(i-1)%3 === 1 && (j-1)%3 === 2 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromRight === true">
-        </td>
-      </tr>
-    </table>
+    <div id="map">
+      <table id="field">
+        <tr v-for="i in mapSize * 3" :key = i>
+          <td v-for="j in mapSize * 3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]" :style="{'min-width': cellSize+'px', height: cellSize + 'px !important'}">
+            <!-- up arrow -->
+            <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(0deg)'}" v-if="(i-1)%3 === 2 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromDown === true">
+            <!-- right arrow -->
+            <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(90deg)'}" v-if="(i-1)%3 === 1 && (j-1)%3 === 0 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromLeft === true">
+            <!-- down arrow -->
+            <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(180deg)'}" v-if="(i-1)%3 === 0 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromUp === true">
+            <!-- left arrow -->
+            <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(-90deg)'}" v-if="(i-1)%3 === 1 && (j-1)%3 === 2 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromRight === true">
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -44,9 +60,8 @@
 import Jimp from 'jimp';
 import { PNG } from 'pngjs';
 import fs from 'fs';
-import path from 'path';
-import config from './config.json';
 import electron from 'electron';
+import config from './config.json';
 
 const { dialog } = electron.remote;
 
@@ -150,6 +165,7 @@ export default {
       ],
       isSetPath: false,
       movePath: [],
+      flushPath: [],
       // struct
       // cell_row_col {
       //   comefrom~~, type
@@ -166,6 +182,8 @@ export default {
     },
     bindCellClickEvent(ipos, jpos) {
       if (this.isSetPath === false) {
+        this.movePath = [];
+        this.flushPath = [];
         this.ChangeClickedPanelType(ipos, jpos);
       }
       else {
@@ -176,13 +194,17 @@ export default {
     },
     bindCellContextEvent(ipos, jpos) {
       if (this.isSetPath === false) {
+        this.movePath = [];
+        this.flushPath = [];
         this.ChangeClickedPanelTypeNone(ipos, jpos);
+      }
+      else {
+        this.deletePath(ipos, jpos);
       }
       // 이걸 쓰면 안대는데 무슨 버그지?
       this.$forceUpdate();
     },
     ChangeSeletedPanelType(panel) {
-      this.movePath = [];
       this.currentPanelType = panel;
     },
     ChangeClickedPanelType(ipos, jpos) {
@@ -237,6 +259,8 @@ export default {
       const row = parseInt((ipos-1) / 3);
       const col = parseInt((jpos-1) / 3);
 
+      this.flushPath = [];
+
       // 클릭한 패널이 빈 공간이라면 무시
       if(!this.fields[`cell_${row}_${col}`] || this.fields[`cell_${row}_${col}`].color === config.colorInfo.none) {
         return;
@@ -266,6 +290,46 @@ export default {
         })) {
           console.log('fuck');
           this.movePath.shift();
+        }
+      }
+    },
+    deletePath(ipos, jpos) {
+      const direction = [{drow: -1, dcol: 0}, {drow: 0, dcol: 1}, {drow: 1, dcol: 0}, {drow: 0, dcol: -1}];
+
+      const row = parseInt((ipos-1) / 3);
+      const col = parseInt((jpos-1) / 3);
+
+      this.movePath = [];
+
+      // 클릭한 패널이 빈 공간이라면 무시
+      if(!this.fields[`cell_${row}_${col}`] || this.fields[`cell_${row}_${col}`].color === config.colorInfo.none) {
+        return;
+      }
+
+      this.flushPath.push({row, col});
+      console.log('pushed');
+      if (this.flushPath.length >= 2) {
+        if(!direction.some((item, i) => {
+          // 클릭한 두 패널이 인접해있는지 확인
+          if(this.flushPath[1].row - this.flushPath[0].row === item.drow && this.flushPath[1].col - this.flushPath[0].col === item.dcol) {
+            console.log(i);
+
+            // 아래쪽에서 현재 패널로
+            if(i === 0) this.fields[`cell_${this.flushPath[1].row}_${this.flushPath[1].col}`].comefromDown = false;
+            // 왼쪽에서 현재 패널로
+            else if(i === 1) this.fields[`cell_${this.flushPath[1].row}_${this.flushPath[1].col}`].comefromLeft = false;
+            // 위쪽에서 현재 패널로
+            else if(i === 2) this.fields[`cell_${this.flushPath[1].row}_${this.flushPath[1].col}`].comefromUp = false;
+            // 오른쪽에서 현재 패널로
+            else if(i === 3) this.fields[`cell_${this.flushPath[1].row}_${this.flushPath[1].col}`].comefromRight = false;
+
+            this.flushPath.shift();
+            return true;
+          }
+          else return false;
+        })) {
+          console.log('fuck');
+          this.flushPath.shift();
         }
       }
     },
@@ -318,22 +382,7 @@ export default {
 
         const filePath = await dialog.showSaveDialogSync({ filters: [ { name: '24비트 PNG (*.png)', extensions: [ 'png' ] } ] });
         console.log(filePath);
-        fs.writeFileSync(filePath, buffer);
-        // console.log(fs.createReadStream('in.png').pipe());
-
-        // buff
-        //   .pipe(new PNG({
-        //     colorType: 2,
-        //     bgColor: {
-        //       red: 0,
-        //       green: 0,
-        //       blue: 0
-        //     }
-        //   }))
-        //   .on('parsed', function() {
-        //     this.pack().pipe(fs.createWriteStream('out.png'));
-        //     console.log('fa')
-        //   });
+        if(filePath)  fs.writeFileSync(filePath, buffer);
       });
     },
     deepCompare () {
@@ -459,20 +508,30 @@ export default {
 </script>
 
 <style scoped>
-  table#field, table#panel-tools {
+  table#field, table#panel-tools, table#other-tools {
     padding: 0;
     border: 1px solid #cccccc;
     border-collapse:collapse;
     line-height: 0;
   }
-  table#panel-tools td {
+  table#panel-tools td, table#other-tools td {
     padding: 0;
-    border: 1px solid;
+    border: 1px solid #cccccc;
   }
   table#field td {
     background: url(/static/img/panels/mass_none.png);
     background-size: 300% !important;
     padding: 0;
+  }
+  table#other-tools td {
+    min-width: 60px;
+    width: 60px;
+    height: 60px;
+    border: 1px solid #cccccc;
+    color: white;
+  }
+  table#other-tools img {
+    cursor: pointer;
   }
   table.set-path-mode {
     opacity: 0.1;
