@@ -26,9 +26,12 @@
             <td>불러오기</td>
             <td><img src="/static/img/tools/tool_filesave.svg" width="60" @click="convertMap2Png()"></td>
             <td></td>
-            <td><img src="/static/img/tools/tool_arrow.svg" width="60" style="transform: rotate(180deg);" @click="mapSize--"></td>
+            <!-- <td><img src="/static/img/tools/tool_arrow.svg" width="60" style="transform: rotate(180deg);" @click="mapResize(-1)"></td>
             <td><img src="/static/img/tools/tool_map.svg" width="60" style="cursor: default;" title="맵의 사이즈를 늘이거나 줄입니다."></td>
-            <td><img src="/static/img/tools/tool_arrow.svg" width="60" @click="mapSize++"></td>
+            <td><img src="/static/img/tools/tool_arrow.svg" width="60" @click="mapResize(1)"></td> -->
+            <td></td>
+            <td></td>
+            <td></td>
             <td></td>
             <td><img src="/static/img/tools/tool_arrow.svg" width="60" style="transform: rotate(180deg);"  @click="cellSize--"></td>
             <td><img src="/static/img/tools/tool_magnifying.svg" width="60" style="cursor: default;" title="셀을 확대하거나 축소합니다."></td>
@@ -37,10 +40,10 @@
         </table>
       </div>
     </div>
-    <div id="map">
+    <div id="map" v-if="isSelectMapSize">
       <table id="field">
-        <tr v-for="i in mapSize * 3" :key = i>
-          <td v-for="j in mapSize * 3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" style="" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]" :style="{'min-width': cellSize+'px', height: cellSize + 'px !important'}">
+        <tr v-for="i in mapSize[0] * 3" :key = i :style="{height: cellSize + 'px !important', 'min-height': cellSize + 'px !important'}">
+          <td v-for="j in mapSize[1] * 3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]" :style="{'min-width': cellSize+'px', height: cellSize + 'px !important',  'min-height': cellSize + 'px !important'}">
             <!-- up arrow -->
             <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(0deg)'}" v-if="(i-1)%3 === 2 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromDown === true">
             <!-- right arrow -->
@@ -53,6 +56,36 @@
         </tr>
       </table>
     </div>
+    <div id="map-size-select" v-else style="width: 610px;">
+      <div id="select-button" style="width: 42%; float: left;">
+        <ul class="gallog_menu" style="margin-top: 0px;">
+          <li class="home" v-for="(item, i) in config.mapInfo" :key="`${item.size[0]}X${item.size[1]}`" @click="selectButtonIdx = i; mapList = item.maps; mapSize = item.size;" :class="{on: selectButtonIdx === i}">
+            <span>{{`${item.size[1]}X${item.size[0]} 맵`}}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="info_contbox">
+        <div class="info_cont">
+          <strong class="tit">매니저</strong>
+          <p class="cont">
+            <span class="mng_nick">ㅇㅇ(223.38)</span>
+          </p>
+        </div>
+        <div class="info_cont">
+          <strong class="tit">부매니저</strong>
+          <p class="cont">
+            <span class="mng_nick" v-for="item in mapList" :key="item[0]">{{item[0]}}</span>
+          </p>
+        </div>
+        <div class="info_cont">
+          <strong class="tit">개설일</strong>
+          <p class="cont">2077-12-25</p>
+        </div>
+      </div>
+      <div style="clear: both; height: 0; overflow: hidden;"></div>
+      <button id="select-size" @click="isSelectMapSize = true;">선택</button>
+    </div>
+    
   </div>
 </template>
 
@@ -70,7 +103,11 @@ export default {
   },
   data() {
     return {
-      mapSize: 10,
+      isSelectMapSize: false,
+      selectButtonIdx: null,
+      config,
+      mapList: [[ '없음', 'none' ]],
+      mapSize: [ 11, 11 ],
       cellSize: 20,
       panelLayout: [
         [ '일반', '보너스', '드로우', '엔카운터', '드롭', '무브', '워프', '워프 무브', '힐', '아이스'],
@@ -174,6 +211,13 @@ export default {
     }
   },
   methods: {
+    // mapResize(cost){
+    //   this.mapSize += cost;
+    //   this.$forceUpdate();
+    // },
+    addStyle(styleName, value, e){
+      e.target.style[styleName] = value;
+    },
     panelToolsHoverd(e){
       e.target.style.opacity = 0.2;
     },
@@ -335,9 +379,9 @@ export default {
     },
     async convertMap2Png(){
       // 맵 크기의 이미지를 만들고
-      new Jimp(this.mapSize * 3, this.mapSize * 3, async (err, image) => {
-        for(let i = 0; i < this.mapSize * 3; i++) {
-          for(let j = 0; j < this.mapSize * 3; j++) {
+      new Jimp(this.mapSize[1] * 3, this.mapSize[0] * 3, async (err, image) => {
+        for(let i = 0; i < this.mapSize[0] * 3; i++) {
+          for(let j = 0; j < this.mapSize[1] * 3; j++) {
             image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.none), j, i);
             // console.log(i, j);
           }
@@ -568,5 +612,90 @@ export default {
   }
   table#field tr:nth-child(3n) {
     border-bottom: 1px solid #cccccc;
+  }
+  button#select-size {
+    width: 610px !important;
+    background: #fff;
+  }
+
+  /* 디씨 CSS */
+  .gallog_menu {
+    overflow: hidden;
+    margin-bottom: 32px;
+    list-style: none;
+  }
+  /* 직접 추가 */
+  ul.gallog_menu {
+    padding-left: 0;
+  }
+  /* 직접 추가 끝 */
+  .gallog_menu li {
+    position: relative;
+    float: left;
+    margin-left: 2px;
+  }
+  .gallog_menu li:nth-child(2n+1) {
+    margin-left: 20px;
+  }
+  .gallog_menu li.on span {
+    background: #4a57a8;
+    color: #fff;
+    text-shadow: 0px -1px #343d8e;
+  }
+  .gallog_menu li span, button#select-size {
+    display: block;
+    width: 97px;
+    height: 35px;
+    padding-right: 1px;
+    line-height: 37px;
+    border: 1px #4a57a8 solid;
+    border-radius: 2px;
+    font-family: Dotum,'돋움';
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+  }
+  /* 직접 입력 */
+  button#select-size:hover {
+    background: #4a57a8;
+    color: #fff;
+    text-shadow: 0px -1px #343d8e;
+  }
+  /* 직접 입력 끝 */
+  .info_contbox {
+    overflow-y: auto;
+    position: relative;
+    width: 54%;
+    float: left;
+    height: 104px;
+    margin-top: -3px;
+    margin-left: 4px;
+    z-index: 1;
+  }
+  .info_cont {
+    overflow: hidden;
+    line-height: 22px;
+  }
+  .info_cont .tit {
+    display: block;
+    float: left;
+    width: 73px;
+  }
+  .info_cont .cont {
+    float: left;
+    text-align: left;
+    width: auto;
+    padding: 0;
+    line-height: 20px;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .mng_nick {
+    display: block;
+  }
+  .info_contbox {
+    font-size: 12px;
+    font-family: Dotum,'돋움',Helvetica,"Apple SD Gothic Neo",sans-serif;
   }
 </style>
