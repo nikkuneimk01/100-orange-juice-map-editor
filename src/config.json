@@ -10,7 +10,7 @@
         "drawL": "#0b620f",
         "drop": "#3f48cc",
         "dropL": "#1c2166",
-        "encount": "#eb1c24",
+        "encount": "#ed1c24",
         "encountL": "#880015",
         "move": "#00a2e8",
         "moveL": "#0083bb",
@@ -21,7 +21,8 @@
         "heal": "#72ff00",
         "healL": "#00c400",
         "ice": "#99d9ea",
-        "minigame": "#ffb584"
+        "minigame": "#ffb584",
+        "deck": "#98470c"
     },
     "mapInfo": [
         {

@@ -42,8 +42,8 @@
     </div>
     <div id="map" v-if="isSelectMapSize">
       <table id="field">
-        <tr v-for="i in mapSize[0] * 3" :key = i :style="{height: cellSize + 'px !important', 'min-height': cellSize + 'px !important'}">
-          <td v-for="j in mapSize[1] * 3" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]" :style="{'min-width': cellSize+'px', height: cellSize + 'px !important',  'min-height': cellSize + 'px !important'}">
+        <tr v-for="i in mapSize[0] * 3 + 1" :key = i :style="{height: cellSize + 'px', 'min-height': cellSize + 'px'}">
+          <td v-for="j in mapSize[1] * 3 + 1" :key = j :ref="`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`" @click="bindCellClickEvent(i, j)" @contextmenu.prevent="bindCellContextEvent(i, j)" :class="panelPosition[(i-1)%3][(j-1)%3]" :style="{'min-width': cellSize+'px', height: cellSize + 'px',  'min-height': cellSize + 'px'}">
             <!-- up arrow -->
             <img src="/static/img/panels/mass_arrow.png" :style="{width: cellSize+'px', transform: 'rotate(0deg)'}" v-if="(i-1)%3 === 2 && (j-1)%3 === 1 && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`] && fields[`cell_${parseInt((i-1) / 3)}_${parseInt((j-1) / 3)}`].comefromDown === true">
             <!-- right arrow -->
@@ -111,9 +111,13 @@ export default {
       cellSize: 20,
       panelLayout: [
         [ '일반', '보너스', '드로우', '엔카운터', '드롭', '무브', '워프', '워프 무브', '힐' ],
-        [ '체크',   '더블 보너스', '더블 드로우', '더블 엔카운터', '더블 드롭', '더블 무브', '일반', '워프 더블 무브', '더블 힐' ]
+        [ '체크',   '더블 보너스', '더블 드로우', '더블 엔카운터', '더블 드롭', '더블 무브', '덱', '워프 더블 무브', '더블 힐' ]
       ],
       panelInfo: {
+        '덱': {
+          source: 'mass_deck',
+          color: config.colorInfo.deck
+        },
         '일반': {
           source: 'mass_common0',
           color: config.colorInfo.common
@@ -567,6 +571,20 @@ export default {
     background-size: 300% !important;
     padding: 0;
   }
+
+  table#field td:last-child{
+    /* background: url(/static/img/panels/mass_bonus0.png) !important; */
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: 0;
+    height: 0;
+    /* display: none; */
+  }
+  table#field tr:last-child, table#field tr:last-child td {
+    min-height: 0 !important;
+    height: 0 !important;
+  }
+
   table#other-tools td {
     min-width: 60px;
     width: 60px;
