@@ -13,15 +13,15 @@
         "encount": "#eb1c24",
         "encountL": "#880015",
         "move": "#00a2e8",
-        "moveL": null,
+        "moveL": "#0083bb",
         "warp": "#a349a4",
         "warpmove": "#e2389a",
-        "warpmoveL": null,
+        "warpmoveL": "#a21767",
         "check": "#ff7f27",
-        "heal": null,
-        "healL": null,
+        "heal": "#72ff00",
+        "healL": "#00c400",
         "ice": "#99d9ea",
-        "minigame": null
+        "minigame": "#ffb584"
     },
     "mapInfo": [
         {
@@ -79,5 +79,3 @@
         }
     ]
 }
-
- 
