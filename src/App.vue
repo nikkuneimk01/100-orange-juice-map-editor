@@ -1,5 +1,5 @@
 <template>
-  <div id="app" @click.middle="isSetPath = !isSetPath">
+  <div id="app" @click.middle.prevent="isSetPath = !isSetPath">
     <!-- <button v-for="panel in panelInfo" :key="panel.name" @click="ChangeSeletedPanelType(panel)">{{panel.name}}</button>
     <button @click="isSetPath=true">경로 설정</button>
     
@@ -409,16 +409,28 @@ export default {
           }
 
           // 패널 이동 방향 표시
-          if(this.fields[key].comefromUp) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 1, row * 3);
+          if(this.fields[key].comefromUp) {
+            if(this.fields[`cell_${row-1}_${col}`].comefromDown)  image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.bothDirection), col * 3 + 1, row * 3);
+            else image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 1, row * 3);
+          }
           else if(this.fields[`cell_${row-1}_${col}`] && this.fields[`cell_${row-1}_${col}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 1, row * 3);
 
-          if(this.fields[key].comefromDown) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 1, row * 3 + 2);
+          if(this.fields[key].comefromDown){
+            if(this.fields[`cell_${row+1}_${col}`].comefromUp)  image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.bothDirection), col * 3 + 1, row * 3 + 2);
+            else image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 1, row * 3 + 2);
+          }
           else if(this.fields[`cell_${row+1}_${col}`] && this.fields[`cell_${row+1}_${col}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 1, row * 3 + 2);
 
-          if(this.fields[key].comefromLeft) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3, row * 3 + 1);
+          if(this.fields[key].comefromLeft){
+            if(this.fields[`cell_${row}_${col-1}`].comefromRight)  image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.bothDirection), col * 3, row * 3 + 1);
+            else image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3, row * 3 + 1);
+          }
           else if(this.fields[`cell_${row}_${col-1}`] && this.fields[`cell_${row}_${col-1}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3, row * 3 + 1);
 
-          if(this.fields[key].comefromRight) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 2, row * 3 + 1);
+          if(this.fields[key].comefromRight){
+            if(this.fields[`cell_${row}_${col+1}`].comefromLeft)  image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.bothDirection), col * 3 + 2, row * 3 + 1);
+            else image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.frontDirection), col * 3 + 2, row * 3 + 1);
+          }
           else if(this.fields[`cell_${row}_${col+1}`] && this.fields[`cell_${row}_${col+1}`].color !== config.colorInfo.none) image.setPixelColor(Jimp.cssColorToHex(config.colorInfo.backDirection), col * 3 + 2, row * 3 + 1);
         });
 

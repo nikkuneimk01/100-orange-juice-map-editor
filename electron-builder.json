@@ -1,0 +1,15 @@
+{
+    "productName": "orangejuice-map-editor",
+    "appId": "com.nikkuneimk01.100orangejuice.mapeditor",
+    "asar": true,
+    "win": {
+        "target": [
+            "portable"
+        ],
+        "icon": "public/static/img/others/icon.ico"
+    },
+    "portable": {
+        "artifactName": "100오렌지주스 맵에디터.exe"
+    },
+    "extends": null
+}

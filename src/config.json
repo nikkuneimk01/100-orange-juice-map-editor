@@ -3,6 +3,7 @@
         "none": "#000000",
         "frontDirection": "#404040",
         "backDirection": "#ffffff",
+        "bothDirection": "#fe006e",
         "common": "#7f7f7f",
         "bonus": "#ffc90e",
         "bonusL": "#ae8700",

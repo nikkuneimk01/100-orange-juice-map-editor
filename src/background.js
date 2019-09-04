@@ -1,6 +1,7 @@
 'use strict'
 
 import { app, protocol, BrowserWindow } from 'electron'
+import path from 'path'
 import {
   createProtocol,
   installVueDevtools
@@ -16,10 +17,12 @@ protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: { secure: true
 
 function createWindow () {
   // Create the browser window.
+  console.log(__dirname);
   win = new BrowserWindow({ 
     width: 644,
     height: 1000,
     'minWidth': 644,
+    icon: path.join(__dirname, '../public/static/img/others/test.png'),
     webPreferences: {
     nodeIntegration: true
   } })
